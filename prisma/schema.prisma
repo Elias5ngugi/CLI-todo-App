@@ -15,7 +15,9 @@ enum Status {
 
 model Todo {
   id          String  @id @default(uuid())
-  title       String
+  title       String  @unique
   description String
   status      Status  @default(TODO)
+
+  @@map("todos")
 }
