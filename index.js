@@ -9,45 +9,42 @@ import {
 
 program
   .command("addTodo")
-  .description("Add a new todo")
-  .option("-t, --title <title>", "Title of the todo")
-  .option("-d, --description <description>", "Description of the todo")
-  .option(
-    "-s, --status <status>",
-    "Status of the todo (todo, inprogress, complete)",
-  )
+  .description("Create a task and add it to the list")
+  .option("-n, --name <name>", "Name of the task")
+  .option("-d, --details <details>", "Details about the task")
+  .option("-p, --progress <progress>", "Task progress (pending, ongoing, done)")
   .action((options) =>
     addTodo({
-      title: options.title,
-      description: options.description,
-      status: options.status,
-    }),
+      title: options.name,
+      description: options.details,
+      status: options.progress,
+    })
   );
 
 program
   .command("updateTodo")
-  .description("Update a todo item")
-  .option("-i, --id <id>", "ID of the todo")
-  .option("-t, --title <title>", "New title")
-  .option("-d, --description <description>", "New description")
-  .option("-s, --status <status>", "New status (todo, inprogress, complete)")
+  .description("Modify an existing task")
+  .option("-i, --id <id>", "Task ID")
+  .option("-n, --name <name>", "Updated task name")
+  .option("-d, --details <details>", "Updated task details")
+  .option("-p, --progress <progress>", "Updated task status")
   .action(updateTodo);
 
 program
   .command("readTodos")
-  .description("Read all todos or a specific one")
-  .option("-i, --id <id>", "ID of the todo")
+  .description("View all tasks or a specific one")
+  .option("-i, --id <id>", "Task ID")
   .action(readTodos);
 
 program
   .command("deleteTodo")
-  .description("Delete a specific todo")
-  .option("-i, --id <id>", "ID of the todo")
+  .description("Remove a specific task from the list")
+  .option("-i, --id <id>", "Task ID")
   .action(deleteTodo);
 
 program
   .command("deleteAllTodos")
-  .description("Delete all todos and asks for confirmation")
+  .description("Erase all tasks (confirmation needed)")
   .action(deleteAllTodos);
 
 program.parse(process.argv);

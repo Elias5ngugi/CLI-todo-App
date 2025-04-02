@@ -2,94 +2,94 @@ import { PrismaClient } from "@prisma/client";
 import chalk from "chalk";
 import readline from "readline";
 
-const prisma = new PrismaClient();
-const validStatuses = ["todo", "inprogress", "complete"];
+const db = new PrismaClient();
+const taskStatuses = ["pending", "ongoing", "done"];
 
-export async function addTodo({ title, description, status }) {
-  if (!title || !description || !status) {
-    console.log(chalk.red("Error: All fields are required!"));
+export async function createTask({ name, details, progress }) {
+  if (!name || !details || !progress) {
+    console.log(chalk.red("Error: All fields must be filled!"));
     return;
   }
 
-  if (!validStatuses.includes(status.toLowerCase())) {
+  if (!taskStatuses.includes(progress.toLowerCase())) {
     console.log(
-      chalk.red('Error: Status must be "todo", "inprogress", or "complete"!'),
+      chalk.red('Error: Progress should be "pending", "ongoing", or "done"!')
     );
     return;
   }
 
-  const newTodo = await prisma.todo.create({
-    data: { title, description, status: status.toUpperCase() },
+  const task = await db.todo.create({
+    data: { title: name, description: details, status: progress.toUpperCase() },
   });
   console.log(
     chalk.green(
-      `Todo added: ${newTodo.title} - ${newTodo.description} [${newTodo.status}]`,
-    ),
+      `Task added: ${task.title} - ${task.description} [${task.status}]`
+    )
   );
 }
 
-export async function updateTodo({ id, title, description, status }) {
-  if (!id) {
-    console.log(chalk.red("Error: Todo ID is required!"));
+export async function modifyTask({ taskId, name, details, progress }) {
+  if (!taskId) {
+    console.log(chalk.red("Error: Task ID is required!"));
     return;
   }
 
-  if (status && !validStatuses.includes(status.toLowerCase())) {
-    console.log(chalk.red("Error: Invalid status!"));
+  if (progress && !taskStatuses.includes(progress.toLowerCase())) {
+    console.log(chalk.red("Error: Invalid progress value!"));
     return;
   }
 
-  await prisma.todo.update({
-    where: { id },
+  await db.todo.update({
+    where: { id: taskId },
     data: {
-      title,
-      description,
-      status: status ? status.toUpperCase() : undefined,
+      title: name,
+      description: details,
+      status: progress ? progress.toUpperCase() : undefined,
     },
   });
-  console.log(chalk.yellow("Todo updated!"));
+  console.log(chalk.yellow("Task updated successfully!"));
 }
 
-export async function readTodos({ id }) {
-  if (id) {
-    const todo = await prisma.todo.findUnique({ where: { id } });
-    if (!todo) {
-      console.log(chalk.red("Todo not found!"));
+export async function viewTasks({ taskId }) {
+  if (taskId) {
+    const task = await db.todo.findUnique({ where: { id: taskId } });
+    if (!task) {
+      console.log(chalk.red("Task not found!"));
       return;
     }
     console.log(
-      chalk.blue(`${todo.title} - ${todo.description} [${todo.status}]`),
+      chalk.blue(`${task.title} - ${task.description} [${task.status}]`)
     );
   } else {
-    const todos = await prisma.todo.findMany();
-    todos.forEach((todo) => {
+    const tasks = await db.todo.findMany();
+    tasks.forEach((task) => {
       console.log(
-        `${chalk.magenta(todo.id)} - ${todo.title} - ${todo.description} [${todo.status}]`,
+        `${chalk.magenta(task.id)} - ${task.title} - ${task.description} [${task.status}]`
       );
     });
   }
 }
 
-export async function deleteTodo({ id }) {
-  if (!id) {
-    console.log(chalk.red("Error: Todo ID is required!"));
+export async function removeTask({ taskId }) {
+  if (!taskId) {
+    console.log(chalk.red("Error: Task ID is required!"));
     return;
   }
-  await prisma.todo.delete({ where: { id } });
-  console.log(chalk.red("Todo deleted!"));
+  await db.todo.delete({ where: { id: taskId } });
+  console.log(chalk.red("Task removed!"));
 }
 
-export async function deleteAllTodos() {
+export async function clearAllTasks() {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
-  rl.question(chalk.red("Are you sure? (yes/no): "), async (answer) => {
-    if (answer.toLowerCase() === "yes") {
-      await prisma.todo.deleteMany();
-      console.log(chalk.red("All todos deleted!"));
+  rl.question(chalk.red("Do you really want to delete everything? (yes/no): "), async (response) => {
+    if (response.toLowerCase() === "yes") {
+      await db.todo.deleteMany();
+      console.log(chalk.red("All tasks erased!"));
     } else {
-      console.log(chalk.blue("Operation cancelled."));
+      console.log(chalk.blue("Action aborted."));
     }
     rl.close();
   });
